@@ -10,6 +10,10 @@ import os
 import rg
 import settings
 from settings import AttrDict
+import tkFont
+
+def mid(l1, l2):
+    return (int((l1[0]+l2[0]) / 2), int((l1[1]+l2[1]) / 2))
 
 class SimulatorUI:
 	def __init__(self, settings, map, player):
@@ -26,6 +30,8 @@ class SimulatorUI:
 		self.teammate_fill_color = "#0F0"
 		self.border_color = "#333"
 		self.selection_border_color = "#FF0"
+		self.move_arrow_color = "#000"
+		self.attack_arrow_color = "#000"
 
 		self.map_width = settings.board_size
 		self.map_height = settings.board_size
@@ -45,6 +51,7 @@ class SimulatorUI:
 
 		self.squares = {}
 		self.labels = {}
+		self.actions = []
 		for x in xrange(0, self.map_width):
 			for y in xrange(0, self.map_height):
 				coordinates = self.getSquareCoordinates((x, y))
@@ -100,6 +107,10 @@ class SimulatorUI:
 		self.root.bind("<space>", self.onSimulate)
 		self.root.bind("<Return>", self.onSimulate)
 
+		# I am a dirty hack, fix me
+		text_font = tkFont.nametofont("TkTextFont")
+		text_font.configure(weight = "bold")
+
 		self.root.mainloop()
 
 	def getSquareCoordinates(self, loc):
@@ -137,6 +148,7 @@ class SimulatorUI:
 		self.canvas.itemconfigure(self.labels[loc], text = text)
 
 	def onEditTurn(self, event):
+		self.clearActions()
 		new_turn = tkSimpleDialog.askinteger(
 			"Edit turn", "Enter new turn", 
 			parent = self.root, 
@@ -162,12 +174,14 @@ class SimulatorUI:
 
 
 	def onRemove(self, event):
+		self.clearActions()
 		if self.getRobot(self.selection) is not None:
 			self.removeRobot(self.selection)
 
 		self.updateSquare(self.selection)
 
 	def onAddTeammate(self, event):
+		self.clearActions()
 		if self.getRobot(self.selection) is not None:
 			self.removeRobot(self.selection)
 
@@ -175,6 +189,7 @@ class SimulatorUI:
 		self.updateSquare(self.selection)
 
 	def onAddEnemy(self, event):
+		self.clearActions()
 		if self.getRobot(self.selection) is not None:
 			self.removeRobot(self.selection)
 
@@ -183,6 +198,7 @@ class SimulatorUI:
 
 
 	def onEditHP(self, event):
+		self.clearActions()
 		robot = self.getRobot(self.selection)
 		if robot is not None:
 			new_hp = tkSimpleDialog.askinteger(
@@ -249,7 +265,48 @@ class SimulatorUI:
 		return actions
 
 	def onSimulate(self, event):
-		print(self.getActions())
+		self.clearActions()
+		actions = self.getActions()
+
+		for robot, action in actions.items():
+			self.renderAction(robot.location, action)
+
+	def clearActions(self):
+		for action in self.actions:
+			self.canvas.delete(action)
+
+		self.actions = []
+
+	def putActionChar(self, loc, char):
+		coordinates = self.getSquareCoordinates(loc)
+		center_coordinates = mid(coordinates[0], coordinates[1])
+		char_coordinates = mid(center_coordinates, coordinates[1])
+		x, y = char_coordinates
+
+		action_char = self.canvas.create_text(
+			x, y, 
+			text = char,
+			font = "TkTextFont",
+			fill = "#000"
+		)
+
+		self.actions.append(action_char)
+
+	def putActionArrow(self, loc, loc2, color):
+		pass
+
+	def renderAction(self, loc, action):
+		if action[0] == "guard":
+			self.putActionChar(loc, "G")
+		elif action[0] == "suicide":
+			self.putActionChar(loc, "S")
+		elif action[0] == "move":
+			self.putActionChar(loc, "M")
+			self.putActionArrow(loc, action[1], self.move_arrow_color)
+		else:
+			self.putActionChar(loc, "A")
+			self.putActionArrow(loc, action[1], self.attack_arrow_color)
+
 
 
 if __name__ == "__main__":
@@ -272,3 +329,4 @@ if __name__ == "__main__":
 
 	SimulatorUI(settings.settings, map_data, player)
 	
+
