@@ -30,7 +30,7 @@ class SimulatorUI:
 		self.teammate_fill_color = "#0F0"
 		self.border_color = "#333"
 		self.selection_border_color = "#FF0"
-		self.move_arrow_color = "#000"
+		self.move_arrow_color = "#00F"
 		self.attack_arrow_color = "#000"
 
 		self.map_width = settings.board_size
@@ -293,7 +293,17 @@ class SimulatorUI:
 		self.actions.append(action_char)
 
 	def putActionArrow(self, loc, loc2, color):
-		pass
+		# this is very ugly
+		coordinates1 = self.getSquareCoordinates(loc)
+		center_coordinates1 = mid(coordinates1[0], coordinates1[1])
+		coordinates2 = self.getSquareCoordinates(loc2)
+		center_coordinates2 = mid(coordinates2[0], coordinates2[1])
+		mid_coordinates = mid(center_coordinates1, center_coordinates2)
+		x1, y1 = mid(center_coordinates1, mid_coordinates)
+		x2, y2 = mid(center_coordinates2, mid_coordinates)
+
+		arrow = self.canvas.create_line(x1, y1, x2, y2, fill = color, width = 3.0, arrow = Tkinter.LAST)
+		self.actions.append(arrow)
 
 	def renderAction(self, loc, action):
 		if action[0] == "guard":
