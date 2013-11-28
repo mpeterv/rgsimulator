@@ -3,6 +3,8 @@ rgsimulator
 
 Test how your bot behaves in certain situations. 
 
+(latest) rgkit is needed to use it. Put rgsimulator.py in its folder. 
+
 Usage
 ----
 
@@ -30,4 +32,10 @@ rgsimulator is fully keyboard-controlled.
 * Press `H` to change hp of a bot in selected cell. 
 * Press `T` to change turn. 
 * Press `Space` or `Enter` to run simulation. 
+
+Screenshots
+----
+
+![](http://i.imgur.com/SNT2dUN.png)
+![](http://i.imgur.com/RN8KntI.png)
 
