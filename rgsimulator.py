@@ -87,7 +87,7 @@ class SimulatorUI:
 		self.field = game.Field(settings.board_size)
 		self.robot_id = 0
 
-		self.player
+		# self.player
 
 		self.root.bind("w", lambda ev: self.moveSelection((0, -1)))
 		self.root.bind("a", lambda ev: self.moveSelection((-1, 0)))
@@ -254,7 +254,10 @@ class SimulatorUI:
 			if robot.player_id == 1:
 				robot_player = self.player
 			else:
-				robot_player = self.player2
+				if self.player2 is not None:
+					robot_player = self.player2
+				else:
+					continue
 
 			user_robot = robot_player.get_robot()
 			for prop in self.settings.exposed_properties + self.settings.player_only_properties:
@@ -362,7 +365,7 @@ if __name__ == "__main__":
 		help="File containing first robot class definition."
 	)
 	parser.add_argument(
-		"usercode2",
+		"-u", "--usercode2",
 		help="File containing second robot class definition."
 	)
 	parser.add_argument(
