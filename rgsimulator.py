@@ -13,13 +13,14 @@ from settings import AttrDict
 import tkFont
 
 def mid(l1, l2):
-    return (int((l1[0]+l2[0]) / 2), int((l1[1]+l2[1]) / 2))
+	return (int((l1[0]+l2[0]) / 2), int((l1[1]+l2[1]) / 2))
 
 class SimulatorUI:
-	def __init__(self, settings, map, player):
+	def __init__(self, settings, map, player, player2):
 		self.settings = settings
 		self.map = map
 		self.player = player
+		self.player2 = player2
 
 		self.center = rg.CENTER_POINT
 
@@ -245,31 +246,66 @@ class SimulatorUI:
 
 	def getActions(self):
 		self.player._robot = None
+		self.player2._robot = None
 		game_info = self.buildGameInfo()
 		actions = {}
 
 		for robot in self.robots:
 			if robot.player_id == 1:
-				user_robot = self.player.get_robot()
-				for prop in self.settings.exposed_properties + self.settings.player_only_properties:
-					setattr(user_robot, prop, getattr(robot, prop))
+				robot_player = self.player
+			else:
+				robot_player = self.player2
 
+			user_robot = robot_player.get_robot()
+			for prop in self.settings.exposed_properties + self.settings.player_only_properties:
+				setattr(user_robot, prop, getattr(robot, prop))
+			try:
+				next_action = user_robot.act(game_info)
+				if not robot.is_valid_action(next_action):
+					raise Exception('Bot %d: %s is not a valid action from %s' % (robot.player_id + 1, str(next_action), robot.location))
+			except Exception:
+				traceback.print_exc(file = sys.stdout)
+				next_action = ['guard']
+			actions[robot] = next_action
+
+		commands = list(self.settings.valid_commands)
+		commands.remove('guard')
+		commands.remove('move')
+		commands.insert(0, 'move')
+
+		for cmd in commands:
+			for robot, action in actions.iteritems():
+				if action[0] != cmd:
+					continue
+
+				old_loc = robot.location
 				try:
-					next_action = user_robot.act(game_info)
-					if not robot.is_valid_action(next_action):
-						raise Exception('Bot %d: %s is not a valid action from %s' % (robot.player_id + 1, str(next_action), robot.location))
+					robot.issue_command(action, actions)
 				except Exception:
-					traceback.print_exc(file = sys.stdout)
-					next_action = ['guard']
-				actions[robot] = next_action
+					traceback.print_exc(file=sys.stdout)
+					actions[robot] = ['guard']
+				if robot.location != old_loc:
+					if self.field[old_loc] is robot:
+						self.field[old_loc] = None
+						self.updateSquare(old_loc)
+					self.field[robot.location] = robot
 		return actions
 
 	def onSimulate(self, event):
 		self.clearActions()
 		actions = self.getActions()
+		self.remove_dead()
 
 		for robot, action in actions.items():
 			self.renderAction(robot.location, action)
+			self.updateSquare(robot.location)
+
+	def remove_dead(self):
+	    to_remove = [x for x in self.robots if x.hp <= 0]
+	    for robot in to_remove:
+	        self.robots.remove(robot)
+	        if self.field[robot.location] == robot:
+	            self.field[robot.location] = None
 
 	def clearActions(self):
 		for action in self.actions:
@@ -323,7 +359,11 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Robot game simulation script.")
 	parser.add_argument(
 		"usercode",
-		help="File containing robot class definition."
+		help="File containing first robot class definition."
+	)
+	parser.add_argument(
+		"usercode2",
+		help="File containing second robot class definition."
 	)
 	parser.add_argument(
 		"-m", "--map", 
@@ -336,7 +376,8 @@ if __name__ == "__main__":
 	map_data = ast.literal_eval(open(map_name).read())
 	game.init_settings(map_data)
 	player = game.Player(open(args.usercode).read())
+	player2 = game.Player(open(args.usercode2).read())
 
-	SimulatorUI(settings.settings, map_data, player)
+	SimulatorUI(settings.settings, map_data, player, player2)
 	
 
