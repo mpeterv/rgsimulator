@@ -131,7 +131,8 @@ class Simulator:
 
 	def getActions(self):
 		self.player._robot = None
-		self.player2._robot = None
+		if self.player2 is not None:
+			self.player2._robot = None
 		game_info = self.buildGameInfo()
 		actions = {}
 
@@ -142,6 +143,8 @@ class Simulator:
 				if self.player2 is not None:
 					robot_player = self.player2
 				else:
+					# Don't act
+					actions[robot] = ['guard']
 					continue
 
 			user_robot = robot_player.get_robot()
@@ -185,16 +188,17 @@ class Simulator:
 	        self.robots.remove(robot)
 	        if self.field[robot.location] == robot:
 	            self.field[robot.location] = None
-	            self.UI.renderEmpty(self.UI.selection)
+	            self.UI.renderEmpty(robot.location)
 
 	def onSimulate(self, event):
 		self.UI.clearActions()
 		actions = self.getActions()
-		self.remove_dead()
 
 		for robot, action in actions.items():
 			self.UI.renderAction(robot.location, action)
 			self.UI.renderBot(robot.location, robot.hp, robot.player_id)
+
+		self.remove_dead()
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Robot game simulation script.")
@@ -217,6 +221,9 @@ if __name__ == "__main__":
 	map_data = ast.literal_eval(open(map_name).read())
 	game.init_settings(map_data)
 	player = game.Player(open(args.usercode).read())
-	player2 = game.Player(open(args.usercode2).read())
+	if args.usercode2 is None:
+		player2 = None
+	else:
+		player2 = game.Player(open(args.usercode2).read())
 
 	Simulator(game.settings, player, player2)
