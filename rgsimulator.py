@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from rgsimulatorUI import SimulatorUI
 import Tkinter
 import tkSimpleDialog
 import argparse
@@ -10,208 +11,90 @@ import os
 import rg
 import settings
 from settings import AttrDict
-import tkFont
 
-def mid(l1, l2):
-    return (int((l1[0]+l2[0]) / 2), int((l1[1]+l2[1]) / 2))
-
-class SimulatorUI:
-	def __init__(self, settings, map, player):
+class Simulator:
+	def __init__(self, settings, player):
 		self.settings = settings
-		self.map = map
 		self.player = player
-
-		self.center = rg.CENTER_POINT
-
-		self.square_size = 40
-		self.fill_color = "#FFF"
-		self.obstacle_fill_color = "#555"
-		self.enemy_fill_color = "#F00"
-		self.teammate_fill_color = "#0F0"
-		self.border_color = "#333"
-		self.selection_border_color = "#FF0"
-		self.move_arrow_color = "#00F"
-		self.attack_arrow_color = "#000"
-
-		self.map_width = settings.board_size
-		self.map_height = settings.board_size
-		self.width = self.square_size*self.map_width
-		self.height = self.square_size*self.map_height
-
-		self.root = Tkinter.Tk()
-		self.root.resizable(0, 0)
-		self.setTitle("Robot Game Simulator")
-
-		self.turn_label = Tkinter.Label(self.root, text = "")
-		self.turn_label.pack()
-		self.setTurn(1)
-
-		self.canvas = Tkinter.Canvas(self.root, width = self.width, height = self.height)
-		self.canvas.pack()
-
-		self.squares = {}
-		self.labels = {}
-		self.actions = []
-		for x in xrange(0, self.map_width):
-			for y in xrange(0, self.map_height):
-				coordinates = self.getSquareCoordinates((x, y))
-				x1, y1 = coordinates[0]
-				x2, y2 = coordinates[1]
-
-				self.squares[(x, y)] = self.canvas.create_rectangle(
-					x1, y1, x2, y2,
-					fill = self.obstacle_fill_color if self.isObstacle((x, y)) else self.fill_color,
-					outline = self.border_color,
-					width = 1
-				)
-				self.labels[(x, y)] =  self.canvas.create_text(
-					x1 + self.square_size/2, y1 + self.square_size/2,
-					text = (x+1)*(y+1)-1 if x*y == 0 else "", # the most clever hack I've ever did
-					font = "TkFixedFont", 
-					fill = "#000"
-				)
-
-		self.selection = self.center
-		selection_coordinates = self.getSquareCoordinates(self.selection)
-		selection_x1, selection_y1 = selection_coordinates[0]
-		selection_x2, selection_y2 = selection_coordinates[1]
-		self.selection_square = self.canvas.create_rectangle(
-			selection_x1, selection_y1, selection_x2, selection_y2,
-			fill = "",
-			outline = self.selection_border_color,
-			width = 5
-		)
+		self.UI = SimulatorUI(settings)
+		self.UI.setTitle("Robot Game Simulator")
 
 		self.robots = []
 		self.field = game.Field(settings.board_size)
 		self.robot_id = 0
+		self.turn = 1
+		self.UI.setTurn(self.turn)
 
-		self.player
+		self.UI.bind("w", lambda ev: self.UI.moveSelection((0, -1)))
+		self.UI.bind("a", lambda ev: self.UI.moveSelection((-1, 0)))
+		self.UI.bind("s", lambda ev: self.UI.moveSelection((0, 1)))
+		self.UI.bind("d", lambda ev: self.UI.moveSelection((1, 0)))
+		self.UI.bind("<Up>", lambda ev: self.UI.moveSelection((0, -1)))
+		self.UI.bind("<Left>", lambda ev: self.UI.moveSelection((-1, 0)))
+		self.UI.bind("<Down>", lambda ev: self.UI.moveSelection((0, 1)))
+		self.UI.bind("<Right>", lambda ev: self.UI.moveSelection((1, 0)))
 
-		self.root.bind("w", lambda ev: self.moveSelection((0, -1)))
-		self.root.bind("a", lambda ev: self.moveSelection((-1, 0)))
-		self.root.bind("s", lambda ev: self.moveSelection((0, 1)))
-		self.root.bind("d", lambda ev: self.moveSelection((1, 0)))
-		self.root.bind("<Up>", lambda ev: self.moveSelection((0, -1)))
-		self.root.bind("<Left>", lambda ev: self.moveSelection((-1, 0)))
-		self.root.bind("<Down>", lambda ev: self.moveSelection((0, 1)))
-		self.root.bind("<Right>", lambda ev: self.moveSelection((1, 0)))
+		self.UI.bind("t", self.onEditTurn)
+		self.UI.bind("f", self.onAddTeammate)
+		self.UI.bind("e", self.onAddEnemy)
+		self.UI.bind("r", self.onRemove)
+		self.UI.bind("<Delete>", self.onRemove)
+		self.UI.bind("<BackSpace>", self.onRemove)
+		self.UI.bind("h", self.onEditHP)
+		self.UI.bind("<space>", self.onSimulate)
+		self.UI.bind("<Return>", self.onSimulate)
 
-		self.root.bind("t", self.onEditTurn)
-		self.root.bind("f", self.onAddTeammate)
-		self.root.bind("e", self.onAddEnemy)
-		self.root.bind("r", self.onRemove)
-		self.root.bind("<Delete>", self.onRemove)
-		self.root.bind("<BackSpace>", self.onRemove)
-		self.root.bind("h", self.onEditHP)
-		self.root.bind("<space>", self.onSimulate)
-		self.root.bind("<Return>", self.onSimulate)
-
-		# I am a dirty hack, fix me
-		text_font = tkFont.nametofont("TkTextFont")
-		text_font.configure(weight = "bold")
-
-		self.root.mainloop()
-
-	def getSquareCoordinates(self, loc):
-		x, y = loc
-		return (
-			(self.square_size*x, self.square_size*y), 
-			(self.square_size*(x + 1), self.square_size*(y + 1))
-		)
-
-	def isObstacle(self, loc):
-		return loc in self.map['obstacle']
-
-	def setSelection(self, loc):
-		if not self.isObstacle(loc):
-			selection_coordinates = self.getSquareCoordinates(loc)
-			selection_x1, selection_y1 = selection_coordinates[0]
-			selection_x2, selection_y2 = selection_coordinates[1]
-			self.canvas.coords(self.selection_square, selection_x1, selection_y1, selection_x2, selection_y2)
-			self.selection = loc
-
-	def moveSelection(self, dloc):
-		self.setSelection((self.selection[0] + dloc[0], self.selection[1] + dloc[1]))
-
-	def setTitle(self, title):
-		self.root.title(title)
-
-	def setTurn(self, turn):
-		self.turn = turn
-		self.turn_label.config(text = "Turn %s" % self.turn)
-
-	def setFill(self, loc, color):
-		self.canvas.itemconfigure(self.squares[loc], fill = color)
-	
-	def setText(self, loc, text):
-		self.canvas.itemconfigure(self.labels[loc], text = text)
+		self.UI.run()
 
 	def onEditTurn(self, event):
-		self.clearActions()
+		self.UI.clearActions()
 		new_turn = tkSimpleDialog.askinteger(
 			"Edit turn", "Enter new turn", 
-			parent = self.root, 
+			parent = self.UI.root, 
 			initialvalue = self.turn,
 			minvalue = 1,
 			maxvalue = 100
 		)
 		if new_turn is not None:
-			self.setTurn(new_turn)
-
-	def updateSquare(self, loc):
-		robot = self.getRobot(loc)
-		if robot is None:
-			self.setFill(loc, self.fill_color)
-			self.setText(loc, "")
-		else:
-			if robot.player_id == 1:
-				self.setFill(loc, self.teammate_fill_color)
-			else:
-				self.setFill(loc, self.enemy_fill_color)
-
-			self.setText(loc, robot.hp)
-
+			self.UI.setTurn(new_turn)
+			self.turn = new_turn
 
 	def onRemove(self, event):
-		self.clearActions()
-		if self.getRobot(self.selection) is not None:
-			self.removeRobot(self.selection)
-
-		self.updateSquare(self.selection)
+		self.UI.clearActions()
+		if self.getRobot(self.UI.selection) is not None:
+			self.removeRobot(self.UI.selection)
+			self.UI.renderEmpty(self.UI.selection)
 
 	def onAddTeammate(self, event):
-		self.clearActions()
-		if self.getRobot(self.selection) is not None:
-			self.removeRobot(self.selection)
+		self.UI.clearActions()
+		if self.getRobot(self.UI.selection) is not None:
+			self.removeRobot(self.UI.selection)
 
-		self.addRobot(self.selection, 1)
-		self.updateSquare(self.selection)
+		self.addRobot(self.UI.selection, 1)
+		self.UI.renderBot(self.UI.selection, 50, 1)
 
 	def onAddEnemy(self, event):
-		self.clearActions()
-		if self.getRobot(self.selection) is not None:
-			self.removeRobot(self.selection)
+		self.UI.clearActions()
+		if self.getRobot(self.UI.selection) is not None:
+			self.removeRobot(self.UI.selection)
 
-		self.addRobot(self.selection, 0)
-		self.updateSquare(self.selection)
-
+		self.addRobot(self.UI.selection, 0)
+		self.UI.renderBot(self.UI.selection, 50, 0)
 
 	def onEditHP(self, event):
-		self.clearActions()
-		robot = self.getRobot(self.selection)
+		self.UI.clearActions()
+		robot = self.getRobot(self.UI.selection)
 		if robot is not None:
 			new_hp = tkSimpleDialog.askinteger(
 				"Edit hp", "Enter new hp", 
-				parent = self.root, 
+				parent = self.UI.root, 
 				initialvalue = robot.hp,
 				minvalue = 1,
 				maxvalue = 50
 			)
 			if new_hp is not None:
 				robot.hp = new_hp
-				self.updateSquare(self.selection)
-
+				self.renderBot(self.UI.selection, new_hp, robot.player_id)
 
 	def getRobotID(self):
 		ret = self.robot_id
@@ -265,59 +148,11 @@ class SimulatorUI:
 		return actions
 
 	def onSimulate(self, event):
-		self.clearActions()
+		self.UI.clearActions()
 		actions = self.getActions()
 
 		for robot, action in actions.items():
-			self.renderAction(robot.location, action)
-
-	def clearActions(self):
-		for action in self.actions:
-			self.canvas.delete(action)
-
-		self.actions = []
-
-	def putActionChar(self, loc, char):
-		coordinates = self.getSquareCoordinates(loc)
-		center_coordinates = mid(coordinates[0], coordinates[1])
-		char_coordinates = mid(center_coordinates, coordinates[1])
-		x, y = char_coordinates
-
-		action_char = self.canvas.create_text(
-			x, y, 
-			text = char,
-			font = "TkTextFont",
-			fill = "#000"
-		)
-
-		self.actions.append(action_char)
-
-	def putActionArrow(self, loc, loc2, color):
-		# this is very ugly
-		coordinates1 = self.getSquareCoordinates(loc)
-		center_coordinates1 = mid(coordinates1[0], coordinates1[1])
-		coordinates2 = self.getSquareCoordinates(loc2)
-		center_coordinates2 = mid(coordinates2[0], coordinates2[1])
-		mid_coordinates = mid(center_coordinates1, center_coordinates2)
-		x1, y1 = mid(center_coordinates1, mid_coordinates)
-		x2, y2 = mid(center_coordinates2, mid_coordinates)
-
-		arrow = self.canvas.create_line(x1, y1, x2, y2, fill = color, width = 3.0, arrow = Tkinter.LAST)
-		self.actions.append(arrow)
-
-	def renderAction(self, loc, action):
-		if action[0] == "guard":
-			self.putActionChar(loc, "G")
-		elif action[0] == "suicide":
-			self.putActionChar(loc, "S")
-		elif action[0] == "move":
-			self.putActionChar(loc, "M")
-			self.putActionArrow(loc, action[1], self.move_arrow_color)
-		else:
-			self.putActionChar(loc, "A")
-			self.putActionArrow(loc, action[1], self.attack_arrow_color)
-
-
+			self.UI.renderAction(robot.location, action)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Robot game simulation script.")
@@ -337,6 +172,7 @@ if __name__ == "__main__":
 	game.init_settings(map_data)
 	player = game.Player(open(args.usercode).read())
 
-	SimulatorUI(settings.settings, map_data, player)
+	Simulator(game.settings, player)
 	
+
 
