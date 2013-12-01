@@ -207,8 +207,8 @@ if __name__ == "__main__":
 		help="File containing first robot class definition."
 	)
 	parser.add_argument(
-		"-u", "--usercode2",
-		help="File containing second robot class definition."
+		"usercode2", nargs="?", default=None,
+		help="File containing second robot class definition (optional)."
 	)
 	parser.add_argument(
 		"-m", "--map", 
