@@ -97,7 +97,7 @@ class Simulator:
 			)
 			if new_hp is not None:
 				robot.hp = new_hp
-				self.renderBot(self.UI.selection, new_hp, robot.player_id)
+				self.UI.renderBot(self.UI.selection, new_hp, robot.player_id)
 
 	def getRobotID(self):
 		ret = self.robot_id
