@@ -50,7 +50,7 @@ class Simulator:
 		self.UI.run()
 
 	def onEditTurn(self, event):
-		self.UI.clearActions()
+		self.UI.fadeActions()
 		new_turn = tkSimpleDialog.askinteger(
 			"Edit turn", "Enter new turn", 
 			parent = self.UI.root, 
@@ -63,13 +63,13 @@ class Simulator:
 			self.turn = new_turn
 
 	def onRemove(self, event):
-		self.UI.clearActions()
+		self.UI.fadeActions()
 		if self.getRobot(self.UI.selection) is not None:
 			self.removeRobot(self.UI.selection)
 			self.UI.renderEmpty(self.UI.selection)
 
 	def onAddTeammate(self, event):
-		self.UI.clearActions()
+		self.UI.fadeActions()
 		if self.getRobot(self.UI.selection) is not None:
 			self.removeRobot(self.UI.selection)
 
@@ -77,7 +77,7 @@ class Simulator:
 		self.UI.renderBot(self.UI.selection, 50, 1)
 
 	def onAddEnemy(self, event):
-		self.UI.clearActions()
+		self.UI.fadeActions()
 		if self.getRobot(self.UI.selection) is not None:
 			self.removeRobot(self.UI.selection)
 
@@ -85,7 +85,7 @@ class Simulator:
 		self.UI.renderBot(self.UI.selection, 50, 0)
 
 	def onEditHP(self, event):
-		self.UI.clearActions()
+		self.UI.fadeActions()
 		robot = self.getRobot(self.UI.selection)
 		if robot is not None:
 			new_hp = tkSimpleDialog.askinteger(
