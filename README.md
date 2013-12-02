@@ -9,16 +9,18 @@ Usage
 ----
 
     
-    usage: rgsimulator.py [-h] [-m MAP] usercode
+    usage: rgsimulator.py [-h] [-m MAP] usercode [usercode2]
     
     Robot game simulation script.
-
+    
     positional arguments:
-      usercode           File containing robot class definition.
+      usercode           File containing first robot class definition.
+      usercode2          File containing second robot class definition (optional).
     
     optional arguments:
       -h, --help         show this help message and exit
       -m MAP, --map MAP  User-specified map file.
+
 
 Controls
 ----
@@ -31,7 +33,8 @@ rgsimulator is fully keyboard-controlled.
 * Press `R`, `Delete` or `BackSpace` to remove a bot in selected cell. 
 * Press `H` to change hp of a bot in selected cell. 
 * Press `T` to change turn. 
-* Press `Space` or `Enter` to run simulation. 
+* Press `Space` to show moves bots would attempt.
+* Press `Enter` to progress turn. 
 
 Screenshots
 ----
