@@ -42,6 +42,7 @@ class Simulator:
 		self.UI.bind("f", self.onAddTeammate)
 		self.UI.bind("e", self.onAddEnemy)
 		self.UI.bind("r", self.onRemove)
+		self.UI.bind("c", self.onClear)
 		self.UI.bind("<Delete>", self.onRemove)
 		self.UI.bind("<BackSpace>", self.onRemove)
 		self.UI.bind("h", self.onEditHP)
@@ -170,6 +171,13 @@ class Simulator:
 	            self.field[robot.location] = None
 	            self.UI.renderEmpty(robot.location)
 
+	def onClear(self, event):
+		self.UI.clearActions()
+		locations = [robot.location for robot in self.robots]
+		self.robots = []
+		for loc in locations:
+			self.field[loc] = None
+			self.UI.renderEmpty(loc)
 
 	def onShowActions(self, event):
 		#self.onSimulate(event)
