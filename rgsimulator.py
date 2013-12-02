@@ -52,8 +52,6 @@ class Simulator:
 		self.UI.run()
 
 	def onEditTurn(self, event):
-		self.UI.fadeActions()
-		self.cached_actions = None
 		new_turn = tkSimpleDialog.askinteger(
 			"Edit turn", "Enter new turn", 
 			parent = self.UI.root, 
@@ -62,13 +60,15 @@ class Simulator:
 			maxvalue = 100
 		)
 		if new_turn is not None:
+			self.UI.fadeActions()
+			self.cached_actions = None
 			self.UI.setTurn(new_turn)
 			self.turn = new_turn
 
 	def onRemove(self, event):
-		self.UI.fadeActions()
-		self.cached_actions = None
 		if self.getRobot(self.UI.selection) is not None:
+			self.UI.fadeActions()
+			self.cached_actions = None
 			self.removeRobot(self.UI.selection)
 			self.UI.renderEmpty(self.UI.selection)
 
@@ -91,10 +91,10 @@ class Simulator:
 		self.UI.renderBot(self.UI.selection, 50, 0)
 
 	def onEditHP(self, event):
-		self.UI.fadeActions()
-		self.cached_actions = None
 		robot = self.getRobot(self.UI.selection)
 		if robot is not None:
+			self.UI.fadeActions()
+			self.cached_actions = None
 			new_hp = tkSimpleDialog.askinteger(
 				"Edit hp", "Enter new hp", 
 				parent = self.UI.root, 
@@ -194,18 +194,28 @@ class Simulator:
 			self.UI.renderAction(robot.location, action)
 
 	def applyActions(self, actions):
-		for robot, action in actions.iteritems():
-			old_loc = robot.location
-			try:
-				robot.issue_command(action, actions)
-			except Exception:
-				traceback.print_exc(file=sys.stdout)
-				actions[robot] = ['guard']
-			if robot.location != old_loc:
-				if self.field[old_loc] is robot:
-					self.field[old_loc] = None
-					self.UI.renderEmpty(old_loc)
-				self.field[robot.location] = robot
+		commands = list(self.settings.valid_commands)
+		commands.remove('guard')
+		commands.remove('move')
+		commands.insert(0, 'move')
+
+		#this cmd iteration is needed for action priority
+		for cmd in commands:
+			for robot, action in actions.iteritems():
+				if action[0] != cmd:
+					continue
+
+				old_loc = robot.location
+				try:
+					robot.issue_command(action, actions)
+				except Exception:
+					traceback.print_exc(file=sys.stdout)
+					actions[robot] = ['guard']
+				if robot.location != old_loc:
+					if self.field[old_loc] is robot:
+						self.field[old_loc] = None
+						self.UI.renderEmpty(old_loc)
+					self.field[robot.location] = robot
 
 	def onSimulate(self, event):
 		self.UI.clearActions()

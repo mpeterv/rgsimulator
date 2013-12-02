@@ -33,7 +33,7 @@ rgsimulator is fully keyboard-controlled.
 * Press `R`, `Delete` or `Backspace` to remove a bot in selected cell. 
 * Press `H` to change hp of a bot in selected cell. 
 * Press `T` to change turn.
-* PRESS `C` to clear the board. 
+* Press `C` to clear the board. 
 * Press `Space` to show moves bots would attempt.
 * Press `Enter` to progress turn. 
 
