@@ -53,6 +53,7 @@ class Simulator:
 
 	def onEditTurn(self, event):
 		self.UI.fadeActions()
+		self.cached_actions = None
 		new_turn = tkSimpleDialog.askinteger(
 			"Edit turn", "Enter new turn", 
 			parent = self.UI.root, 
@@ -66,12 +67,14 @@ class Simulator:
 
 	def onRemove(self, event):
 		self.UI.fadeActions()
+		self.cached_actions = None
 		if self.getRobot(self.UI.selection) is not None:
 			self.removeRobot(self.UI.selection)
 			self.UI.renderEmpty(self.UI.selection)
 
 	def onAddTeammate(self, event):
 		self.UI.fadeActions()
+		self.cached_actions = None
 		if self.getRobot(self.UI.selection) is not None:
 			self.removeRobot(self.UI.selection)
 
@@ -80,6 +83,7 @@ class Simulator:
 
 	def onAddEnemy(self, event):
 		self.UI.fadeActions()
+		self.cached_actions = None
 		if self.getRobot(self.UI.selection) is not None:
 			self.removeRobot(self.UI.selection)
 
@@ -88,6 +92,7 @@ class Simulator:
 
 	def onEditHP(self, event):
 		self.UI.fadeActions()
+		self.cached_actions = None
 		robot = self.getRobot(self.UI.selection)
 		if robot is not None:
 			new_hp = tkSimpleDialog.askinteger(
@@ -173,6 +178,7 @@ class Simulator:
 
 	def onClear(self, event):
 		self.UI.clearActions()
+		self.cached_actions = None
 		locations = [robot.location for robot in self.robots]
 		self.robots = []
 		for loc in locations:
@@ -189,7 +195,6 @@ class Simulator:
 
 	def applyActions(self, actions):
 		for robot, action in actions.iteritems():
-
 			old_loc = robot.location
 			try:
 				robot.issue_command(action, actions)
