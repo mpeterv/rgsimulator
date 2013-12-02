@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 from rgsimulatorUI import SimulatorUI
 import Tkinter
 import tkSimpleDialog
