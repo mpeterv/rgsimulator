@@ -180,7 +180,6 @@ class Simulator:
 			self.UI.renderEmpty(loc)
 
 	def onShowActions(self, event):
-		#self.onSimulate(event)
 		self.UI.clearActions()
 		actions = self.getActions()
 		self.cached_actions = actions
