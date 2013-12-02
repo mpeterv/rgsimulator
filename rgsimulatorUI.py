@@ -137,6 +137,16 @@ class SimulatorUI:
 
 		self.actions = []
 
+	def fadeActions(self):
+		for action in self.actions:
+			if self.canvas.type(action) == "text":
+				old_text = self.canvas.itemcget(action, "text")
+				new_text = old_text.strip("()")
+				new_text = "("+new_text+")"
+				self.canvas.itemconfig(action, fill="#CCC", text=new_text)
+			else:
+				self.canvas.itemconfig(action, fill="#CCC")
+
 	def renderActionChar(self, loc, char):
 		coordinates = self.getSquareCoordinates(loc)
 		center_coordinates = mid(coordinates[0], coordinates[1])

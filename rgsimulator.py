@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 from rgsimulatorUI import SimulatorUI
 import Tkinter
 import tkSimpleDialog
@@ -22,6 +22,7 @@ class Simulator:
 		self.UI.setTitle("Robot Game Simulator")
 
 		self.robots = []
+		self.cached_actions = None
 		self.field = game.Field(settings.board_size)
 		self.robot_id = 0
 
@@ -41,16 +42,18 @@ class Simulator:
 		self.UI.bind("f", self.onAddTeammate)
 		self.UI.bind("e", self.onAddEnemy)
 		self.UI.bind("r", self.onRemove)
+		self.UI.bind("c", self.onClear)
 		self.UI.bind("<Delete>", self.onRemove)
 		self.UI.bind("<BackSpace>", self.onRemove)
 		self.UI.bind("h", self.onEditHP)
-		self.UI.bind("<space>", self.onSimulate)
+		self.UI.bind("<space>", self.onShowActions)
 		self.UI.bind("<Return>", self.onSimulate)
 
 		self.UI.run()
 
 	def onEditTurn(self, event):
-		self.UI.clearActions()
+		self.UI.fadeActions()
+		self.cached_actions = None
 		new_turn = tkSimpleDialog.askinteger(
 			"Edit turn", "Enter new turn", 
 			parent = self.UI.root, 
@@ -63,13 +66,15 @@ class Simulator:
 			self.turn = new_turn
 
 	def onRemove(self, event):
-		self.UI.clearActions()
+		self.UI.fadeActions()
+		self.cached_actions = None
 		if self.getRobot(self.UI.selection) is not None:
 			self.removeRobot(self.UI.selection)
 			self.UI.renderEmpty(self.UI.selection)
 
 	def onAddTeammate(self, event):
-		self.UI.clearActions()
+		self.UI.fadeActions()
+		self.cached_actions = None
 		if self.getRobot(self.UI.selection) is not None:
 			self.removeRobot(self.UI.selection)
 
@@ -77,7 +82,8 @@ class Simulator:
 		self.UI.renderBot(self.UI.selection, 50, 1)
 
 	def onAddEnemy(self, event):
-		self.UI.clearActions()
+		self.UI.fadeActions()
+		self.cached_actions = None
 		if self.getRobot(self.UI.selection) is not None:
 			self.removeRobot(self.UI.selection)
 
@@ -85,7 +91,8 @@ class Simulator:
 		self.UI.renderBot(self.UI.selection, 50, 0)
 
 	def onEditHP(self, event):
-		self.UI.clearActions()
+		self.UI.fadeActions()
+		self.cached_actions = None
 		robot = self.getRobot(self.UI.selection)
 		if robot is not None:
 			new_hp = tkSimpleDialog.askinteger(
@@ -97,7 +104,7 @@ class Simulator:
 			)
 			if new_hp is not None:
 				robot.hp = new_hp
-				self.renderBot(self.UI.selection, new_hp, robot.player_id)
+				self.UI.renderBot(self.UI.selection, new_hp, robot.player_id)
 
 	def getRobotID(self):
 		ret = self.robot_id
@@ -159,27 +166,6 @@ class Simulator:
 				next_action = ['guard']
 			actions[robot] = next_action
 
-		commands = list(self.settings.valid_commands)
-		commands.remove('guard')
-		commands.remove('move')
-		commands.insert(0, 'move')
-
-		for cmd in commands:
-			for robot, action in actions.iteritems():
-				if action[0] != cmd:
-					continue
-
-				old_loc = robot.location
-				try:
-					robot.issue_command(action, actions)
-				except Exception:
-					traceback.print_exc(file=sys.stdout)
-					actions[robot] = ['guard']
-				if robot.location != old_loc:
-					if self.field[old_loc] is robot:
-						self.field[old_loc] = None
-						self.UI.renderEmpty(old_loc)
-					self.field[robot.location] = robot
 		return actions
 
 	def remove_dead(self):
@@ -190,15 +176,54 @@ class Simulator:
 	            self.field[robot.location] = None
 	            self.UI.renderEmpty(robot.location)
 
-	def onSimulate(self, event):
+	def onClear(self, event):
+		self.UI.clearActions()
+		self.cached_actions = None
+		locations = [robot.location for robot in self.robots]
+		self.robots = []
+		for loc in locations:
+			self.field[loc] = None
+			self.UI.renderEmpty(loc)
+
+	def onShowActions(self, event):
 		self.UI.clearActions()
 		actions = self.getActions()
+		self.cached_actions = actions
+
+		for robot, action in actions.items():
+			self.UI.renderAction(robot.location, action)
+
+	def applyActions(self, actions):
+		for robot, action in actions.iteritems():
+			old_loc = robot.location
+			try:
+				robot.issue_command(action, actions)
+			except Exception:
+				traceback.print_exc(file=sys.stdout)
+				actions[robot] = ['guard']
+			if robot.location != old_loc:
+				if self.field[old_loc] is robot:
+					self.field[old_loc] = None
+					self.UI.renderEmpty(old_loc)
+				self.field[robot.location] = robot
+
+	def onSimulate(self, event):
+		self.UI.clearActions()
+		if self.cached_actions is None:
+			actions = self.getActions()
+		else:
+			actions = self.cached_actions
+
+		self.applyActions(actions)
 
 		for robot, action in actions.items():
 			self.UI.renderAction(robot.location, action)
 			self.UI.renderBot(robot.location, robot.hp, robot.player_id)
 
 		self.remove_dead()
+		self.cached_actions = None
+		self.turn += 1
+		self.UI.setTurn(self.turn)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Robot game simulation script.")
