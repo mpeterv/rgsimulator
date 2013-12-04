@@ -192,14 +192,8 @@ class Simulator:
 			self.UI.renderAction(robot.location, action)
 
 	def applyActions(self, actions):
-		commands = list(self.settings.valid_commands)
-		commands.remove('guard')
-		commands.remove('move')
-		commands.insert(0, 'move')
-
 		action_priority = ['move','attack','suicide']
 
-		#this cmd iteration is needed for action priority
 		for cmd in action_priority:
 			for robot, action in actions.iteritems():
 				if action[0] != cmd:
