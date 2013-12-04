@@ -84,6 +84,9 @@ class SimulatorUI:
 	def bind(self, event, hook):
 		self.root.bind(event, hook)
 
+	def onMouseClick(self, event):
+		self.setSelection(self.getSquareByCoordinates(event.x,event.y))
+
 	def getSquareCoordinates(self, loc):
 		x, y = loc
 		return (

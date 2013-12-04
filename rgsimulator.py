@@ -37,6 +37,7 @@ class Simulator:
 		self.UI.bind("<Left>", lambda ev: self.UI.moveSelection((-1, 0)))
 		self.UI.bind("<Down>", lambda ev: self.UI.moveSelection((0, 1)))
 		self.UI.bind("<Right>", lambda ev: self.UI.moveSelection((1, 0)))
+		self.UI.bind("<ButtonPress-1>", lambda ev: self.UI.onMouseClick(ev))
 
 		self.UI.bind("t", self.onEditTurn)
 		self.UI.bind("f", self.onAddTeammate)
@@ -199,8 +200,10 @@ class Simulator:
 		commands.remove('move')
 		commands.insert(0, 'move')
 
+		action_priority = ['move','attack','suicide']
+
 		#this cmd iteration is needed for action priority
-		for cmd in commands:
+		for cmd in action_priority:
 			for robot, action in actions.iteritems():
 				if action[0] != cmd:
 					continue
