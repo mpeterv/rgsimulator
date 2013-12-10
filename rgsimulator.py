@@ -248,7 +248,7 @@ if __name__ == "__main__":
 	parser.add_argument(
 		"-m", "--map", 
 		help="User-specified map file.",
-		default=os.path.join(os.path.dirname(__file__), 'maps/default.py'))
+		default=os.path.join(os.path.dirname(rg.__file__), 'maps/default.py'))
 
 	args = parser.parse_args()
 
