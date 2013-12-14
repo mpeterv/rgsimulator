@@ -3,15 +3,12 @@ from rgsimulatorUI import SimulatorUI
 import Tkinter
 import tkSimpleDialog
 import argparse
-import game
+from rgkit import rg, game, settings
+from rgkit.settings import AttrDict
 import ast
 import sys
 import traceback
 import os
-import rg
-import settings
-from settings import AttrDict
-
 
 class Simulator:
 	def __init__(self, settings, player, player2):
