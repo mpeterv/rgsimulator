@@ -3,7 +3,7 @@ rgsimulator
 
 Test how your bot behaves in certain situations. 
 
-(latest) rgkit is needed to use it. Put rgsimulator.py in its folder. 
+(latest) rgkit is needed to use it. If you don't have it, grab it from [here](https://github.com/WhiteHalmos/rgkit) and install as a module. 
 
 Usage
 ----
