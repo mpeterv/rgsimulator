@@ -39,7 +39,7 @@ class SimulatorUI:
 
 		self.squares = {}
 		self.labels = {}
-		self.actions = []
+		self.actions = {}
 
 		for x in xrange(0, self.map_width):
 			for y in xrange(0, self.map_height):
@@ -60,6 +60,8 @@ class SimulatorUI:
 					font = "TkFixedFont", 
 					fill = "#000"
 				)
+
+				self.actions[(x, y)] = []
 
 		self.center = (int(self.map_width/2), int(self.map_height/2))
 
@@ -134,14 +136,18 @@ class SimulatorUI:
 		self.setText(loc, hp)
 		self.setFill(loc, self.bot_fill_color[player_id])
 
-	def clearActions(self):
-		for action in self.actions:
+	def clearAction(self, loc):
+		for action in self.actions[loc]:
 			self.canvas.delete(action)
 
-		self.actions = []
+		self.actions[loc] = []
 
-	def fadeActions(self):
-		for action in self.actions:
+	def clearActions(self):
+		for loc in self.actions:
+			self.clearAction(loc)
+
+	def fadeAction(self, loc):
+		for action in self.actions[loc]:
 			if self.canvas.type(action) == "text":
 				old_text = self.canvas.itemcget(action, "text")
 				new_text = old_text.strip("()")
@@ -149,6 +155,10 @@ class SimulatorUI:
 				self.canvas.itemconfig(action, fill="#CCC", text=new_text)
 			else:
 				self.canvas.itemconfig(action, fill="#CCC")
+
+	def fadeActions(self):
+		for loc in self.actions:
+			self.fadeAction(loc)
 
 	def renderActionChar(self, loc, char):
 		coordinates = self.getSquareCoordinates(loc)
@@ -163,7 +173,7 @@ class SimulatorUI:
 			fill = "#000"
 		)
 
-		self.actions.append(action_char)
+		self.actions[loc].append(action_char)
 
 	def renderActionArrow(self, loc, loc2, color):
 		coordinates1 = self.getSquareCoordinates(loc)
@@ -175,7 +185,7 @@ class SimulatorUI:
 		x2, y2 = mid(center_coordinates2, mid_coordinates)
 
 		arrow = self.canvas.create_line(x1, y1, x2, y2, fill = color, width = self.arrow_width, arrow = Tkinter.LAST)
-		self.actions.append(arrow)
+		self.actions[loc].append(arrow)
 
 	def renderAction(self, loc, action):
 		if action[0] == "guard":
