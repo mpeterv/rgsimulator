@@ -118,7 +118,7 @@ class Simulator:
 
 	def addRobot(self, loc, player_id):
 		robot_id = self.getRobotID()
-		robot = game.InternalRobot(loc, self.settings.robot_hp, player_id, robot_id, self.field)
+		robot = game.InternalRobot(loc, self.settings.robot_hp, player_id, robot_id, self.field, 0)
 		self.robots.append(robot)
 		self.field[loc] = robot
 
