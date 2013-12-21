@@ -19,11 +19,10 @@ class Simulator:
 		self.UI = SimulatorUI(settings)
 		self.UI.setTitle("Robot Game Simulator")
 
-		self.state = GameState(settings)
+		self.state = GameState(settings, turn=1)
 		self.cached_actions = None
 
-		self.turn = 1
-		self.UI.setTurn(self.turn)
+		self.UI.setTurn(self.state.turn)
 
 		self.UI.bind("w", lambda ev: self.UI.moveSelection((0, -1)))
 		self.UI.bind("a", lambda ev: self.UI.moveSelection((-1, 0)))
@@ -112,7 +111,7 @@ class Simulator:
 					(self.settings.exposed_properties + self.settings.player_only_properties)
 				))
 			) for loc, robot in self.state.robots.iteritems()),
-			'turn': self.turn,
+			'turn': self.state.turn,
 		})
 
 	def getActions(self):
