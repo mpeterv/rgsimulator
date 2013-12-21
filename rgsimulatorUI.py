@@ -132,6 +132,11 @@ class SimulatorUI:
 		self.setText(loc, "")
 		self.setFill(loc, self.obstacle_fill_color if loc in self.settings['obstacles'] else self.fill_color)
 
+	def clearBots(self):
+		for x in xrange(1, self.map_width):
+			for y in xrange(1, self.map_height):
+				self.renderEmpty((x, y))
+
 	def renderBot(self, loc, hp, player_id):
 		self.setText(loc, hp)
 		self.setFill(loc, self.bot_fill_color[player_id])
