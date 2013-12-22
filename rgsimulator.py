@@ -1,9 +1,11 @@
 #!/usr/bin/env python2
 from rgsimulatorUI import SimulatorUI
 import Tkinter
+import pkg_resources
 import tkSimpleDialog
 import argparse
 from rgkit import rg, game
+from rgkit.game import Player
 from rgkit.gamestate import GameState
 from rgkit.settings import AttrDict
 import ast
@@ -12,10 +14,17 @@ import traceback
 import os
 
 class Simulator:
-	def __init__(self, settings, player, player2):
+	def __init__(self, settings, code, code2):
 		self.settings = settings
-		self.player = player
-		self.player2 = player2
+		self.code = code
+		if code2 is None:
+			code2 = map_data = open(pkg_resources.resource_filename('rgkit', 'defaultrobots.py')).read()
+		self.code2 = code2
+
+		self.player = Player(self.code)
+		self.player.set_player_id(1)
+		self.player2 = Player(self.code2)
+		self.player2.set_player_id(0)
 		self.UI = SimulatorUI(settings)
 		self.UI.setTitle("Robot Game Simulator")
 
@@ -102,47 +111,10 @@ class Simulator:
 				robot.hp = new_hp
 				self.UI.renderBot(self.UI.selection, new_hp, robot.player_id)
 
-	def buildGameInfo(self):
-		return AttrDict({
-			'robots': dict((
-				loc,
-				AttrDict(dict(
-					(x, getattr(robot, x)) for x in
-					(self.settings.exposed_properties + self.settings.player_only_properties)
-				))
-			) for loc, robot in self.state.robots.iteritems()),
-			'turn': self.state.turn,
-		})
-
 	def getActions(self):
-		self.player._robot = None
-		if self.player2 is not None:
-			self.player2._robot = None
-		game_info = self.buildGameInfo()
-		actions = {}
-
-		for loc, robot in self.state.robots.iteritems():
-			if robot.player_id == 1:
-				robot_player = self.player
-			else:
-				if self.player2 is not None:
-					robot_player = self.player2
-				else:
-					# Don't act
-					actions[loc] = ['guard']
-					continue
-
-			user_robot = robot_player.get_robot()
-			for prop in self.settings.exposed_properties + self.settings.player_only_properties:
-				setattr(user_robot, prop, getattr(robot, prop))
-			try:
-				next_action = user_robot.act(game_info)
-				if not self.state.is_valid_action(loc, next_action):
-					raise Exception('Bot %d: %s is not a valid action from %s' % (robot.player_id + 1, str(next_action), robot.location))
-			except Exception:
-				traceback.print_exc(file = sys.stdout)
-				next_action = ['guard']
-			actions[loc] = next_action
+		actions = self.player.get_actions(self.state, 0)
+		actions2 = self.player2.get_actions(self.state, 0)
+		actions.update(actions2)
 
 		return actions
 
@@ -153,6 +125,8 @@ class Simulator:
 		self.state = GameState(self.settings)
 
 	def onShowActions(self, event):
+		self.player.reload()
+		self.player2.reload()
 		self.UI.clearActions()
 		actions = self.getActions()
 		self.cached_actions = actions
@@ -196,10 +170,10 @@ if __name__ == "__main__":
 	map_name = os.path.join(args.map)
 	map_data = ast.literal_eval(open(map_name).read())
 	settings = game.init_settings(map_data)
-	player = game.Player(open(args.usercode).read())
+	code = open(args.usercode).read()
 	if args.usercode2 is None:
-		player2 = None
+		code2 = None
 	else:
-		player2 = game.Player(open(args.usercode2).read())
+		code2 = open(args.usercode2).read()
 
-	Simulator(settings, player, player2)
+	Simulator(settings, code, code2)
