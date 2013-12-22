@@ -18,7 +18,7 @@ class Simulator:
 		self.settings = settings
 		self.code = code
 		if code2 is None:
-			code2 = map_data = open(pkg_resources.resource_filename('rgkit', 'defaultrobots.py')).read()
+			code2 = map_data = open(pkg_resources.resource_filename('rgkit', 'bots/guardbot.py')).read()
 		self.code2 = code2
 
 		self.player = Player(self.code)
