@@ -153,27 +153,29 @@ class Simulator:
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Robot game simulation script.")
 	parser.add_argument(
-		"usercode",
+		"player",
 		help="File containing first robot class definition."
 	)
 	parser.add_argument(
-		"usercode2", nargs="?", default=None,
+		"player2", nargs="?", default=None,
 		help="File containing second robot class definition (optional)."
 	)
 	parser.add_argument(
 		"-m", "--map", 
 		help="User-specified map file.",
-		default=os.path.join(os.path.dirname(rg.__file__), 'maps/default.py'))
+		type=argparse.FileType('r'),
+        default=pkg_resources.resource_filename('rgkit',
+                                                'maps/default.py')
+    )
 
 	args = parser.parse_args()
 
-	map_name = os.path.join(args.map)
-	map_data = ast.literal_eval(open(map_name).read())
+	map_data = ast.literal_eval(args.map.read())
 	settings = game.init_settings(map_data)
-	code = open(args.usercode).read()
-	if args.usercode2 is None:
+	code = open(args.player).read()
+	if args.player2 is None:
 		code2 = None
 	else:
-		code2 = open(args.usercode2).read()
+		code2 = open(args.player2).read()
 
 	Simulator(settings, code, code2)
