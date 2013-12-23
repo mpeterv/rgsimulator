@@ -14,8 +14,8 @@ Usage
     Robot game simulation script.
     
     positional arguments:
-      usercode           File containing first robot class definition.
-      usercode2          File containing second robot class definition (optional).
+      player             File containing first robot class definition.
+      player2            File containing second robot class definition (optional).
     
     optional arguments:
       -h, --help         show this help message and exit
