@@ -97,7 +97,7 @@ class Simulator:
 
 	def onEditHP(self, event):
 		if self.state.is_robot(self.UI.selection):
-			robot = self.state[self.UI.selection]
+			robot = self.state.robots[self.UI.selection]
 			self.UI.fadeActions()
 			self.cached_actions = None
 			new_hp = tkSimpleDialog.askinteger(
