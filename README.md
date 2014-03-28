@@ -36,7 +36,7 @@ rgsimulator is fully keyboard-controlled.
 * Press `C` to clear the board. 
 * Press `Space` to show moves bots would attempt.
 * Press `Enter` to progress turn. 
-* Press `R` to reload the code for both bots. 
+* Press `L` to reload the code for both bots. 
 
 Screenshots
 ----
