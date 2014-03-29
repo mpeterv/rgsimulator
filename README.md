@@ -36,7 +36,10 @@ rgsimulator is fully keyboard-controlled.
 * Press `C` to clear the board. 
 * Press `Space` to show moves bots would attempt.
 * Press `Enter` to progress turn. 
-* Press `L` to reload the code for both bots. 
+* Press `L` to load a match from robotgame.net. 
+* Press `K` to load a specific turn from a loaded match. 
+* Press `P` to swap code for the two bots. (player 1 becomes player 2)
+* Press `O` to reload the code for both bots. 
 
 Screenshots
 ----

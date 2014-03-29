@@ -12,10 +12,12 @@ import ast
 import sys
 import traceback
 import os
+import getrgmatch
 
 class Simulator:
     def __init__(self, settings, p1_path, p2_path):
         self.settings = settings
+        self.match_id = None
         self.p1_path = p1_path
         self.p2_path = p2_path
         self.code = open(p1_path).read()
@@ -45,7 +47,11 @@ class Simulator:
         self.UI.bind("<Right>", lambda ev: self.UI.moveSelection((1, 0)))
         self.UI.bind("<ButtonPress-1>", lambda ev: self.UI.onMouseClick(ev))
 
-        self.UI.bind("l", self.onReloadPlayer)
+        self.UI.bind("l", self.onLoadMatch)
+        self.UI.bind("k", self.onLoadTurn)
+        self.UI.bind("o", self.onReloadPlayer)
+        self.UI.bind("p", self.onSwapPlayer)
+        
         self.UI.bind("t", self.onEditTurn)
         self.UI.bind("f", self.onAddTeammate)
         self.UI.bind("e", self.onAddEnemy)
@@ -69,6 +75,50 @@ class Simulator:
         self.player2 = Player(self.code2)
         self.player2.set_player_id(0)
 
+    def onSwapPlayer(self, event):
+        self.p1_path, self.p2_path = self.p2_path, self.p1_path
+        
+    def onLoadMatch(self, event):
+        self.match_id = tkSimpleDialog.askinteger(
+            "Load match", "Enter match number", 
+            parent = self.UI.root, 
+            initialvalue = 2588548,
+            minvalue = 1,
+            maxvalue = 99999999
+        )
+        if self.match_id is not None:
+            self.moves = getrgmatch.get_match_result(self.match_id)
+            self.loadBotsfromTurn(1)
+ 
+    def onLoadTurn(self, event):
+        if self.match_id is not None:
+            new_turn = tkSimpleDialog.askinteger(
+                "Edit turn", "Enter new turn", 
+                parent = self.UI.root, 
+                initialvalue = self.state.turn,
+                minvalue = 1,
+                maxvalue = 100
+            )
+            if new_turn is not None:
+                self.loadBotsfromTurn(new_turn)
+ 
+    def loadBotsfromTurn (self, new_turn):
+        if self.match_id is not None:
+            self.UI.clearActions()
+            self.UI.clearBots()
+            self.cached_actions = None
+            self.state = GameState(self.settings)
+            for bot in self.moves[new_turn]:
+                loc = tuple(bot['location'])
+                # print bot
+                self.state.add_robot(loc, bot['player_id'])
+                self.state.robots[loc].hp = bot['hp']
+                self.UI.renderBot(loc, bot['hp'], bot['player_id'])
+                
+            self.UI.setTurn(new_turn)
+            self.state.turn = new_turn
+       
+        
     def onEditTurn(self, event):
         new_turn = tkSimpleDialog.askinteger(
             "Edit turn", "Enter new turn", 
