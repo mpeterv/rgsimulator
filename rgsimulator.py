@@ -1,17 +1,14 @@
 #!/usr/bin/env python2
-from rgsimulatorUI import SimulatorUI
-import Tkinter
-import pkg_resources
 import tkSimpleDialog
 import argparse
-from rgkit import rg, game
+import ast
+
+import pkg_resources
+
+from rgsimulatorUI import SimulatorUI
 from rgkit.game import Player
 from rgkit.gamestate import GameState
 from rgkit.settings import settings
-import ast
-import sys
-import traceback
-import os
 import getrgmatch
 
 class Simulator:
