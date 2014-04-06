@@ -1,33 +1,27 @@
 #!/usr/bin/env python2
-from rgsimulatorUI import SimulatorUI
-import Tkinter
-import pkg_resources
 import tkSimpleDialog
 import argparse
-from rgkit import rg, game
+import ast
+
+import pkg_resources
+
+from rgsimulatorUI import SimulatorUI
 from rgkit.game import Player
 from rgkit.gamestate import GameState
-from rgkit.settings import AttrDict
-import ast
-import sys
-import traceback
-import os
+from rgkit.settings import settings
 import getrgmatch
 
 class Simulator:
-    def __init__(self, settings, p1_path, p2_path):
-        self.settings = settings
+    def __init__(self, p1_path, p2_path):
         self.match_id = None
         self.p1_path = p1_path
         self.p2_path = p2_path
-        self.code = open(p1_path).read()
         if p2_path is None:
-            self.p2_path = map_data = open(pkg_resources.resource_filename('rgkit', 'bots/guardbot.py')).read()
-        self.code2 = open(p2_path).read()
+            self.p2_path = pkg_resources.resource_filename('rgkit', 'bots/guardbot.py')
 
-        self.player = Player(self.code)
+        self.player = Player(self.p1_path)
         self.player.set_player_id(1)
-        self.player2 = Player(self.code2)
+        self.player2 = Player(self.p2_path)
         self.player2.set_player_id(0)
         self.UI = SimulatorUI(settings)
         self.UI.setTitle("Robot Game Simulator")
@@ -68,11 +62,9 @@ class Simulator:
     def onReloadPlayer(self, event):
         self.UI.fadeActions()
         self.cached_actions = None
-        self.code = open(self.p1_path).read()
-        self.code2 = open(self.p2_path).read()
-        self.player = Player(self.code)
+        self.player = Player(self.p1_path)
         self.player.set_player_id(1)
-        self.player2 = Player(self.code2)
+        self.player2 = Player(self.p2_path)
         self.player2.set_player_id(0)
 
     def onSwapPlayer(self, event):
@@ -107,7 +99,7 @@ class Simulator:
             self.UI.clearActions()
             self.UI.clearBots()
             self.cached_actions = None
-            self.state = GameState(self.settings)
+            self.state = GameState()
             for bot in self.moves[new_turn]:
                 loc = tuple(bot['location'])
                 # print bot
@@ -185,7 +177,7 @@ class Simulator:
         self.UI.clearActions()
         self.UI.clearBots()
         self.cached_actions = None
-        self.state = GameState(self.settings)
+        self.state = GameState()
 
     def onShowActions(self, event):
         self.player.reload()
@@ -234,6 +226,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     map_data = ast.literal_eval(args.map.read())
-    settings = game.init_settings(map_data)
+    settings.init_map(map_data)
 
-    Simulator(settings, args.player, args.player2)
+    Simulator(args.player, args.player2)
