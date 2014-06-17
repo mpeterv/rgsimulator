@@ -56,6 +56,7 @@ class Simulator:
         self.UI.bind("<space>", self.onShowActions)
         self.UI.bind("<Return>", self.onSimulate)
         self.UI.bind("n", self.onNextAction)
+        self.UI.bind("r", self.onSpawnRobots)
 
         self.UI.run()
 
@@ -132,35 +133,33 @@ class Simulator:
             self.state.turn = new_turn
 
     def onRemove(self, event):
-        if self.state.is_robot(self.UI.selection):
+        self._removeRobot(self.UI.selection)
+
+    def _removeRobot(self, loc):
+        if self.state.is_robot(loc):
             self.UI.fadeActions()
             self.cached_actions = None
-            if self.UI.selection in self.human_actions:
-                del self.human_actions[self.UI.selection]
-            self.state.remove_robot(self.UI.selection)
-            self.UI.renderEmpty(self.UI.selection)
+            if loc in self.human_actions:
+                del self.human_actions[loc]
+            self.state.remove_robot(loc)
+            self.UI.renderEmpty(loc)
 
     def onAddTeammate(self, event):
-        self.UI.fadeActions()
-        self.cached_actions = None
-        if self.state.is_robot(self.UI.selection):
-            self.state.remove_robot(self.UI.selection)
-            if self.UI.selection in self.human_actions:
-                del self.human_actions[self.UI.selection]
-
-        self.state.add_robot(self.UI.selection, 1)
-        self.UI.renderBot(self.UI.selection, 50, 1)
+        self._addRobot(1, self.UI.selection)
 
     def onAddEnemy(self, event):
+        self._addRobot(0, self.UI.selection)
+
+    def _addRobot(self, player_id, loc):
         self.UI.fadeActions()
         self.cached_actions = None
-        if self.state.is_robot(self.UI.selection):
-            self.state.remove_robot(self.UI.selection)
-            if self.UI.selection in self.human_actions:
-                del self.human_actions[self.UI.selection]
+        if self.state.is_robot(loc):
+            self.state.remove_robot(loc)
+            if loc in self.human_actions:
+                del self.human_actions[loc]
 
-        self.state.add_robot(self.UI.selection, 0)
-        self.UI.renderBot(self.UI.selection, 50, 0)
+        self.state.add_robot(loc, player_id)
+        self.UI.renderBot(loc, 50, player_id)
 
     def onEditHP(self, event):
         if self.state.is_robot(self.UI.selection):
@@ -253,6 +252,14 @@ class Simulator:
         self.human_actions[self.UI.selection] = action
         self.UI.clearAction(self.UI.selection)
         self.UI.renderAction(self.UI.selection, action)
+
+    def onSpawnRobots(self, event):
+        all_locs = self.state._get_spawn_locations()
+        for loc in settings.spawn_coords:
+            self._removeRobot(loc)
+        for i, loc in enumerate(all_locs):
+            player_id = i // settings.spawn_per_player
+            self._addRobot(player_id, loc)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Robot game simulation script.")
