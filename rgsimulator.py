@@ -12,17 +12,15 @@ from rgkit.settings import settings
 import getrgmatch
 
 class Simulator:
-    def __init__(self, p1_path, p2_path):
+    def __init__(self, player1, player2):
         self.match_id = None
-        self.p1_path = p1_path
-        self.p2_path = p2_path
-        if p2_path is None:
-            self.p2_path = pkg_resources.resource_filename('rgkit', 'bots/guardbot.py')
 
-        self.player = Player(self.p1_path)
-        self.player.set_player_id(1)
-        self.player2 = Player(self.p2_path)
-        self.player2.set_player_id(0)
+        self.player = player1
+        if self.player:
+            self.player.set_player_id(1)
+        self.player2 = player2
+        if self.player2:
+            self.player2.set_player_id(0)
         self.UI = SimulatorUI(settings)
         self.UI.setTitle("Robot Game Simulator")
 
@@ -62,10 +60,12 @@ class Simulator:
     def onReloadPlayer(self, event):
         self.UI.fadeActions()
         self.cached_actions = None
-        self.player = Player(self.p1_path)
-        self.player.set_player_id(1)
-        self.player2 = Player(self.p2_path)
-        self.player2.set_player_id(0)
+        if self.player:
+            self.player.reload()
+            self.player.set_player_id(1)
+        if self.player2:
+            self.player2.reload()
+            self.player2.set_player_id(0)
 
     def onSwapPlayer(self, event):
         self.p1_path, self.p2_path = self.p2_path, self.p1_path
@@ -167,10 +167,19 @@ class Simulator:
                 self.UI.renderBot(self.UI.selection, new_hp, robot.player_id)
 
     def getActions(self):
-        actions = self.player.get_actions(self.state, 0)
-        actions2 = self.player2.get_actions(self.state, 0)
-        actions.update(actions2)
-
+        robots = self.state.robots
+        if self.player:
+            p1_actions = self.player.get_actions(self.state, 0)
+        else:
+            p1_actions = {loc: ['guard'] for loc, robot in robots.items() if
+                    robot.player_id == 1}
+        if self.player2:
+            p2_actions = self.player2.get_actions(self.state, 0)
+        else:
+            p2_actions = {loc: ['guard'] for loc, robot in robots.items() if
+                    robot.player_id == 0}
+        actions = p1_actions
+        actions.update(p2_actions)
         return actions
 
     def onClear(self, event):
@@ -180,8 +189,10 @@ class Simulator:
         self.state = GameState()
 
     def onShowActions(self, event):
-        self.player.reload()
-        self.player2.reload()
+        if self.player:
+            self.player.reload()
+        if self.player2:
+            self.player2.reload()
         self.UI.clearActions()
         actions = self.getActions()
         self.cached_actions = actions
@@ -228,4 +239,10 @@ if __name__ == "__main__":
     map_data = ast.literal_eval(args.map.read())
     settings.init_map(map_data)
 
-    Simulator(args.player, args.player2)
+    p1_path = args.player
+    p2_path = args.player2
+
+    player1 = Player(p1_path) if p1_path else None
+    player2 = Player(p2_path) if p2_path else None
+
+    Simulator(player1, player2)
