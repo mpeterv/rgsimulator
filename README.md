@@ -40,6 +40,8 @@ rgsimulator is fully keyboard-controlled.
 * Press `K` to load a specific turn from a loaded match. Also updates the simulator turn counter.
 * Press `P` to swap code for the two bots. (player 1 becomes player 2)
 * Press `O` to reload the code for both bots. 
+* Press `N` to change the action of the robot in selected cell. Think `N` for "next action".
+* Press `G` to spawn robots and remove robots in spawn locations. Think `G` for "generate robots".
 
 Screenshots
 ----
