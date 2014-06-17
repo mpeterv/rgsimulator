@@ -56,7 +56,7 @@ class Simulator:
         self.UI.bind("<space>", self.onShowActions)
         self.UI.bind("<Return>", self.onSimulate)
         self.UI.bind("n", self.onNextAction)
-        self.UI.bind("r", self.onSpawnRobots)
+        self.UI.bind("g", self.onSpawnRobots)
 
         self.UI.run()
 
