@@ -26,6 +26,7 @@ class Simulator:
 
         self.state = GameState(settings, turn=1)
         self.cached_actions = None
+        self.human_actions = {}
 
         self.UI.setTurn(self.state.turn)
 
@@ -54,12 +55,14 @@ class Simulator:
         self.UI.bind("h", self.onEditHP)
         self.UI.bind("<space>", self.onShowActions)
         self.UI.bind("<Return>", self.onSimulate)
+        self.UI.bind("n", self.onNextAction)
 
         self.UI.run()
 
     def onReloadPlayer(self, event):
         self.UI.fadeActions()
         self.cached_actions = None
+        self.human_actions = {}
         if self.player:
             self.player.reload()
             self.player.set_player_id(1)
@@ -68,7 +71,8 @@ class Simulator:
             self.player2.set_player_id(0)
 
     def onSwapPlayer(self, event):
-        self.p1_path, self.p2_path = self.p2_path, self.p1_path
+        self.player, self.player2 = self.player2, self.player
+        self.onReloadPlayer(None)
         
     def onLoadMatch(self, event):
         self.match_id = tkSimpleDialog.askinteger(
@@ -99,6 +103,7 @@ class Simulator:
             self.UI.clearActions()
             self.UI.clearBots()
             self.cached_actions = None
+            self.human_actions = {}
             self.state = GameState()
             for bot in self.moves[new_turn]:
                 loc = tuple(bot['location'])
@@ -122,6 +127,7 @@ class Simulator:
         if new_turn is not None:
             self.UI.fadeActions()
             self.cached_actions = None
+            self.human_actions = {}
             self.UI.setTurn(new_turn)
             self.state.turn = new_turn
 
@@ -129,6 +135,8 @@ class Simulator:
         if self.state.is_robot(self.UI.selection):
             self.UI.fadeActions()
             self.cached_actions = None
+            if self.UI.selection in self.human_actions:
+                del self.human_actions[self.UI.selection]
             self.state.remove_robot(self.UI.selection)
             self.UI.renderEmpty(self.UI.selection)
 
@@ -137,6 +145,8 @@ class Simulator:
         self.cached_actions = None
         if self.state.is_robot(self.UI.selection):
             self.state.remove_robot(self.UI.selection)
+            if self.UI.selection in self.human_actions:
+                del self.human_actions[self.UI.selection]
 
         self.state.add_robot(self.UI.selection, 1)
         self.UI.renderBot(self.UI.selection, 50, 1)
@@ -146,6 +156,8 @@ class Simulator:
         self.cached_actions = None
         if self.state.is_robot(self.UI.selection):
             self.state.remove_robot(self.UI.selection)
+            if self.UI.selection in self.human_actions:
+                del self.human_actions[self.UI.selection]
 
         self.state.add_robot(self.UI.selection, 0)
         self.UI.renderBot(self.UI.selection, 50, 0)
@@ -167,25 +179,26 @@ class Simulator:
                 self.UI.renderBot(self.UI.selection, new_hp, robot.player_id)
 
     def getActions(self):
-        robots = self.state.robots
-        if self.player:
-            p1_actions = self.player.get_actions(self.state, 0)
-        else:
-            p1_actions = {loc: ['guard'] for loc, robot in robots.items() if
-                    robot.player_id == 1}
-        if self.player2:
-            p2_actions = self.player2.get_actions(self.state, 0)
-        else:
-            p2_actions = {loc: ['guard'] for loc, robot in robots.items() if
-                    robot.player_id == 0}
-        actions = p1_actions
-        actions.update(p2_actions)
+        def getPlayerActions(player, player_id):
+            if player:
+                actions = player.get_actions(self.state, player_id)
+            else:
+                actions = {}
+            for loc, robot in self.state.robots.iteritems():
+                if robot.player_id == player_id:
+                    action = self.human_actions.get(loc)
+                    if action or loc not in actions:
+                        actions[loc] = action if action else ['guard']
+            return actions
+        actions = getPlayerActions(self.player, 1)
+        actions.update(getPlayerActions(self.player2, 0))
         return actions
 
     def onClear(self, event):
         self.UI.clearActions()
         self.UI.clearBots()
         self.cached_actions = None
+        self.human_actions = {}
         self.state = GameState()
 
     def onShowActions(self, event):
@@ -214,7 +227,32 @@ class Simulator:
             self.UI.renderBot(loc, robot.hp, robot.player_id)
 
         self.cached_actions = None
+        self.human_actions = {}
         self.UI.setTurn(self.state.turn)
+
+    def onNextAction(self, event):
+        if not self.state.is_robot(self.UI.selection):
+            return
+        robot = self.state.robots[self.UI.selection]
+        action = self.human_actions.get(self.UI.selection)
+        if action is None and self.cached_actions is not None:
+            action = self.cached_actions.get(self.UI.selection)
+        if action is None:
+            action = ['guard']
+        x, y = self.UI.selection
+        adjacent_locs = ((x, y-1), (x+1, y), (x, y+1), (x-1, y))
+        move_locs = [l for l in adjacent_locs if l not in settings.obstacles]
+        all_actions = [['guard']]
+        all_actions += [['move', loc] for loc in move_locs]
+        all_actions += [['attack', loc] for loc in adjacent_locs]
+        all_actions += [['suicide']]
+        i = (all_actions.index(action) + 1) % len(all_actions)
+        action = all_actions[i]
+        if self.cached_actions is not None:
+            self.cached_actions[self.UI.selection] = action
+        self.human_actions[self.UI.selection] = action
+        self.UI.clearAction(self.UI.selection)
+        self.UI.renderAction(self.UI.selection, action)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Robot game simulation script.")
