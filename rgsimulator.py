@@ -198,7 +198,7 @@ class Simulator:
         self.UI.clearBots()
         self.cached_actions = None
         self.human_actions = {}
-        self.state = GameState()
+        self.state = GameState(turn=self.state.turn)
 
     def onShowActions(self, event):
         if self.player:
