@@ -201,33 +201,35 @@ class Simulator:
         self.state = GameState(turn=self.state.turn)
 
     def onShowActions(self, event):
-        if self.player:
-            self.player.reload()
-        if self.player2:
-            self.player2.reload()
-        self.UI.clearActions()
-        actions = self.getActions()
-        self.cached_actions = actions
+        if self.state.turn < 100:
+            if self.player:
+                self.player.reload()
+            if self.player2:
+                self.player2.reload()
+            self.UI.clearActions()
+            actions = self.getActions()
+            self.cached_actions = actions
 
-        for loc, action in actions.iteritems():
-            self.UI.renderAction(loc, action)
+            for loc, action in actions.iteritems():
+                self.UI.renderAction(loc, action)
 
     def onSimulate(self, event):
-        self.UI.clearActions()
-        self.UI.clearBots()
-        if self.cached_actions is None:
-            actions = self.getActions()
-        else:
-            actions = self.cached_actions
+        if self.state.turn < 100:
+            self.UI.clearActions()
+            self.UI.clearBots()
+            if self.cached_actions is None:
+                actions = self.getActions()
+            else:
+                actions = self.cached_actions
 
-        self.state = self.state.apply_actions(actions, spawn=False)
+            self.state = self.state.apply_actions(actions, spawn=False)
 
-        for loc, robot in self.state.robots.iteritems():
-            self.UI.renderBot(loc, robot.hp, robot.player_id)
+            for loc, robot in self.state.robots.iteritems():
+                self.UI.renderBot(loc, robot.hp, robot.player_id)
 
-        self.cached_actions = None
-        self.human_actions = {}
-        self.UI.setTurn(self.state.turn)
+            self.cached_actions = None
+            self.human_actions = {}
+            self.UI.setTurn(self.state.turn)
 
     def onNextAction(self, event):
         if not self.state.is_robot(self.UI.selection):
