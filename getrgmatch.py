@@ -5,7 +5,7 @@ import ast
 def get_match_result(match_id = 2588548):
     raw_file = urllib2.urlopen('http://robotgame.net/match/%s' % match_id).read()
 
-    preamble = "/static/replay.js\"></script>\n<script type=\"text/javascript\" src=\"data:text/javascript;base64,"
+    preamble = "<script type=\"text/javascript\" src=\"data:text/javascript;base64,"
 
     start_pos = raw_file.find(preamble) + len(preamble)
     end_pos = raw_file.find('\"', start_pos) - 1
