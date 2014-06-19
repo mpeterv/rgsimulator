@@ -57,7 +57,7 @@ class SimulatorUI:
 				self.labels[(x, y)] =  self.canvas.create_text(
 					x1 + self.square_size/2, y1 + self.square_size/2,
 					text = (x+1)*(y+1)-1 if x*y == 0 else "", # the most clever hack I've ever did
-					font = "TkFixedFont", 
+					font = "TkFixedFont",
 					fill = "#000"
 				)
 
@@ -92,7 +92,7 @@ class SimulatorUI:
 	def getSquareCoordinates(self, loc):
 		x, y = loc
 		return (
-			(self.square_size*x + self.padding/2, self.square_size*y + self.padding/2), 
+			(self.square_size*x + self.padding/2, self.square_size*y + self.padding/2),
 			(self.square_size*(x + 1) - self.padding/2, self.square_size*(y + 1) - self.padding/2)
 		)
 
@@ -124,7 +124,7 @@ class SimulatorUI:
 
 	def setFill(self, loc, color):
 		self.canvas.itemconfigure(self.squares[loc], fill = color)
-	
+
 	def setText(self, loc, text):
 		self.canvas.itemconfigure(self.labels[loc], text = text)
 
@@ -172,7 +172,7 @@ class SimulatorUI:
 		x, y = char_coordinates
 
 		action_char = self.canvas.create_text(
-			x, y, 
+			x, y,
 			text = char,
 			font = "TkTextFont",
 			fill = "#000"

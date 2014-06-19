@@ -13,5 +13,5 @@ def get_match_result(match_id = 2588548):
     decoded_moves = base64.decodestring(raw_file[start_pos:end_pos].replace('\n',''))
 
     moves = ast.literal_eval(decoded_moves[16:len(decoded_moves)-2])
-    
+
     return moves

@@ -44,7 +44,7 @@ class Simulator:
         self.UI.bind("k", self.onLoadTurn)
         self.UI.bind("o", self.onReloadPlayer)
         self.UI.bind("p", self.onSwapPlayer)
-        
+
         self.UI.bind("t", self.onEditTurn)
         self.UI.bind("f", self.onAddTeammate)
         self.UI.bind("e", self.onAddEnemy)
@@ -74,11 +74,11 @@ class Simulator:
     def onSwapPlayer(self, event):
         self.player, self.player2 = self.player2, self.player
         self.onReloadPlayer(None)
-        
+
     def onLoadMatch(self, event):
         self.match_id = tkSimpleDialog.askinteger(
-            "Load match", "Enter match number", 
-            parent = self.UI.root, 
+            "Load match", "Enter match number",
+            parent = self.UI.root,
             initialvalue = 2588548,
             minvalue = 1,
             maxvalue = 99999999
@@ -86,19 +86,19 @@ class Simulator:
         if self.match_id is not None:
             self.moves = getrgmatch.get_match_result(self.match_id)
             self.loadBotsfromTurn(1)
- 
+
     def onLoadTurn(self, event):
         if self.match_id is not None:
             new_turn = tkSimpleDialog.askinteger(
-                "Edit turn", "Enter new turn", 
-                parent = self.UI.root, 
+                "Edit turn", "Enter new turn",
+                parent = self.UI.root,
                 initialvalue = self.state.turn,
                 minvalue = 1,
                 maxvalue = 100
             )
             if new_turn is not None:
                 self.loadBotsfromTurn(new_turn)
- 
+
     def loadBotsfromTurn (self, new_turn):
         if self.match_id is not None:
             self.UI.clearActions()
@@ -112,15 +112,15 @@ class Simulator:
                 self.state.add_robot(loc, bot['player_id'])
                 self.state.robots[loc].hp = bot['hp']
                 self.UI.renderBot(loc, bot['hp'], bot['player_id'])
-                
+
             self.UI.setTurn(new_turn)
             self.state.turn = new_turn
-       
-        
+
+
     def onEditTurn(self, event):
         new_turn = tkSimpleDialog.askinteger(
-            "Edit turn", "Enter new turn", 
-            parent = self.UI.root, 
+            "Edit turn", "Enter new turn",
+            parent = self.UI.root,
             initialvalue = self.state.turn,
             minvalue = 1,
             maxvalue = 100
@@ -167,8 +167,8 @@ class Simulator:
             self.UI.fadeActions()
             self.cached_actions = None
             new_hp = tkSimpleDialog.askinteger(
-                "Edit hp", "Enter new hp", 
-                parent = self.UI.root, 
+                "Edit hp", "Enter new hp",
+                parent = self.UI.root,
                 initialvalue = robot.hp,
                 minvalue = 1,
                 maxvalue = 50
@@ -274,7 +274,7 @@ if __name__ == "__main__":
         help="File containing second robot class definition (optional)."
     )
     parser.add_argument(
-        "-m", "--map", 
+        "-m", "--map",
         help="User-specified map file.",
         type=argparse.FileType('r'),
         default=pkg_resources.resource_filename('rgkit',
