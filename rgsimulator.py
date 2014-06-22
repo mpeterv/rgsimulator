@@ -65,10 +65,10 @@ class Simulator:
         self.cached_actions = None
         self.human_actions = {}
         if self.player:
-            self.player.reload()
+            self.player.reload(from_file=True)
             self.player.set_player_id(1)
         if self.player2:
-            self.player2.reload()
+            self.player2.reload(from_file=True)
             self.player2.set_player_id(0)
 
     def onSwapPlayer(self, event):
@@ -203,9 +203,9 @@ class Simulator:
     def onShowActions(self, event):
         if self.state.turn < 100:
             if self.player:
-                self.player.reload()
+                self.player.reload(from_file=True)
             if self.player2:
-                self.player2.reload()
+                self.player2.reload(from_file=True)
             self.UI.clearActions()
             actions = self.getActions()
             self.cached_actions = actions
