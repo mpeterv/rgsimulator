@@ -12,15 +12,19 @@ from rgkit.settings import settings
 import getrgmatch
 
 class Simulator:
-    def __init__(self, player1, player2):
+    def __init__(self, player1_path, player2_path):
         self.match_id = None
 
-        self.player = player1
+        self.player = Player(player1_path) if player1_path else None
         if self.player:
+            self.player1_path = player1_path
             self.player.set_player_id(1)
-        self.player2 = player2
+
+        self.player2 = Player(player2_path) if player2_path else None
         if self.player2:
+            self.player2_path = player2_path
             self.player2.set_player_id(0)
+
         self.UI = SimulatorUI(settings)
         self.UI.setTitle("Robot Game Simulator")
 
@@ -65,10 +69,10 @@ class Simulator:
         self.cached_actions = None
         self.human_actions = {}
         if self.player:
-            self.player.reload(from_file=True)
+            self.player = Player(self.player1_path)
             self.player.set_player_id(1)
         if self.player2:
-            self.player2.reload(from_file=True)
+            self.player2 = Player(self.player2_path)
             self.player2.set_player_id(0)
 
     def onSwapPlayer(self, event):
@@ -202,10 +206,14 @@ class Simulator:
 
     def onShowActions(self, event):
         if self.state.turn < 100:
+            #the following is needed since if the turn does not change,
+            # non-stateless bots behave differently
             if self.player:
-                self.player.reload(from_file=True)
+                self.player = Player(self.player1_path)
+                self.player.set_player_id(1)
             if self.player2:
-                self.player2.reload(from_file=True)
+                self.player2 = Player(self.player2_path)
+                self.player2.set_player_id(0)
             self.UI.clearActions()
             actions = self.getActions()
             self.cached_actions = actions
@@ -289,7 +297,4 @@ if __name__ == "__main__":
     p1_path = args.player
     p2_path = args.player2
 
-    player1 = Player(p1_path) if p1_path else None
-    player2 = Player(p2_path) if p2_path else None
-
-    Simulator(player1, player2)
+    Simulator(p1_path, p2_path)
