@@ -221,6 +221,14 @@ class Simulator:
             for loc, action in actions.iteritems():
                 self.UI.renderAction(loc, action)
 
+            try:
+                rgsim_text = self.player._module.rgsim_text
+                for loc,text in rgsim_text.iteritems():
+                    self.UI.renderText(loc,text)
+
+            except AttributeError:
+                print "No rgsim_text dict found for player 1, skipping..."
+
     def onSimulate(self, event):
         if self.state.turn < 100:
             self.UI.clearActions()

@@ -203,3 +203,10 @@ class SimulatorUI:
 		else:
 			self.renderActionChar(loc, "A")
 			self.renderActionArrow(loc, action[1], self.attack_arrow_color)
+
+	def renderText(self, loc, text):
+		coordinates = self.getSquareCoordinates(loc)
+		center = mid(coordinates[0], coordinates[1])
+		x,y = mid(center,coordinates[0])
+		textobj = self.canvas.create_text(x,y,text=text)
+		self.actions[loc].append(textobj)
