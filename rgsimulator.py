@@ -228,6 +228,9 @@ class Simulator:
 
             except AttributeError:
                 print "No rgsim_text dict found for player 1, skipping..."
+            except:
+                print ("Error in rgsim_text dict, please ensure keys are "+
+                       "valid locations and values are strings")
 
     def onSimulate(self, event):
         if self.state.turn < 100:
