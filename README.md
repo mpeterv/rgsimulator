@@ -20,6 +20,7 @@ Usage
       -h, --help         show this help message and exit
       -m MAP, --map MAP  User-specified map file.
 
+If your robot code contains a dict called `rgsim_text`, rgsimulator will attempt to print the dict's values at the location given by the dict's keys.
 
 Controls
 ----
