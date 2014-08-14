@@ -25,6 +25,8 @@ class Simulator:
             self.player2_path = player2_path
             self.player2.set_player_id(0)
 
+        self.turn_repeat = False
+
         self.UI = SimulatorUI(settings)
         self.UI.setTitle("Robot Game Simulator")
 
@@ -76,8 +78,12 @@ class Simulator:
             self.player2.set_player_id(0)
 
     def onSwapPlayer(self, event):
-        self.player, self.player2 = self.player2, self.player
+        self.UI.clearActions()
+        self.UI.clearBots()
         self.onReloadPlayer(None)
+        for loc, robot in self.state.robots.iteritems():
+            self.state.robots[loc]["player_id"] = 1 - self.state.robots[loc]["player_id"]
+            self.UI.renderBot(loc, robot.hp, robot.player_id)
 
     def onLoadMatch(self, event):
         self.match_id = tkSimpleDialog.askinteger(
@@ -208,10 +214,10 @@ class Simulator:
         if self.state.turn < 100:
             #the following is needed since if the turn does not change,
             # non-stateless bots behave differently
-            if self.player:
+            if self.player and self.turn_repeat:
                 self.player = Player(self.player1_path)
                 self.player.set_player_id(1)
-            if self.player2:
+            if self.player2 and self.turn_repeat:
                 self.player2 = Player(self.player2_path)
                 self.player2.set_player_id(0)
             self.UI.clearActions()
@@ -220,6 +226,8 @@ class Simulator:
 
             for loc, action in actions.iteritems():
                 self.UI.renderAction(loc, action)
+
+            self.turn_repeat = True
 
             try:
                 rgsim_text = self.player._module.rgsim_text
@@ -249,6 +257,7 @@ class Simulator:
             self.cached_actions = None
             self.human_actions = {}
             self.UI.setTurn(self.state.turn)
+            self.turn_repeat = False
 
     def onNextAction(self, event):
         if not self.state.is_robot(self.UI.selection):

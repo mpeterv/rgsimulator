@@ -15,7 +15,7 @@ class SimulatorUI:
 		self.selection_border_width = 5
 		self.fill_color = "#FFF"
 		self.obstacle_fill_color = "#555"
-		self.bot_fill_color = ["#F00", "#0F0"]
+		self.bot_fill_color = ["#57C", "#C75"]
 		self.border_color = "#333"
 		self.selection_border_color = "#FF0"
 		self.move_arrow_color = "#00F"
