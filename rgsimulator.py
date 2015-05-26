@@ -190,7 +190,7 @@ class Simulator:
     def getActions(self):
         def getPlayerActions(player, player_id):
             if player:
-                actions = player.get_actions(self.state, player_id)
+                actions, _ = player.get_responses(self.state, player_id)
             else:
                 actions = {}
             for loc, robot in self.state.robots.iteritems():
