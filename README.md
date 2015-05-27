@@ -1,14 +1,14 @@
 rgsimulator
 ===========
 
-Test how your bot behaves in certain situations.
+Test how your [robotgame](https://robotgame.net/) bot behaves in certain situations.
 
-(latest) rgkit is needed to use it. If you don't have it, grab it from [here](https://github.com/WhiteHalmos/rgkit) and install as a module with pip.
+(latest) rgkit is needed to use it. If you don't have it, grab it from [here](https://github.com/RobotGame/rgkit) and install as a module with pip.
 
 Usage
 ----
 
-    usage: rgsimulator.py [-h] [-m MAP] usercode [usercode2]
+    usage: rgsimulator.py [-h] [-m MAP] player [player2]
 
     Robot game simulation script.
 
@@ -48,4 +48,3 @@ Screenshots
 
 ![](http://i.imgur.com/SNT2dUN.png)
 ![](http://i.imgur.com/RN8KntI.png)
-
