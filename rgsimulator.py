@@ -197,7 +197,7 @@ class Simulator:
                 if robot.player_id == player_id:
                     action = self.human_actions.get(loc)
                     if action or loc not in actions:
-                        actions[loc] = action if action else ['guard']
+                        actions[loc] = action if action else ('guard',)
             return actions
         actions = getPlayerActions(self.player, 1)
         actions.update(getPlayerActions(self.player2, 0))
@@ -267,14 +267,14 @@ class Simulator:
         if action is None and self.cached_actions is not None:
             action = self.cached_actions.get(self.UI.selection)
         if action is None:
-            action = ['guard']
+            action = ('guard',)
         x, y = self.UI.selection
         adjacent_locs = ((x, y-1), (x+1, y), (x, y+1), (x-1, y))
         move_locs = [l for l in adjacent_locs if l not in settings.obstacles]
-        all_actions = [['guard']]
-        all_actions += [['move', loc] for loc in move_locs]
-        all_actions += [['attack', loc] for loc in adjacent_locs]
-        all_actions += [['suicide']]
+        all_actions = [('guard',)]
+        all_actions += [('move', loc) for loc in move_locs]
+        all_actions += [('attack', loc) for loc in adjacent_locs]
+        all_actions += [('suicide',)]
         i = (all_actions.index(action) + 1) % len(all_actions)
         action = all_actions[i]
         if self.cached_actions is not None:
