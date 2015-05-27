@@ -11,6 +11,7 @@ from rgkit.gamestate import GameState
 from rgkit.settings import settings
 import getrgmatch
 
+
 class Simulator:
     def __init__(self, player1_path, player2_path):
         self.match_id = None
@@ -109,7 +110,7 @@ class Simulator:
             if new_turn is not None:
                 self.loadBotsfromTurn(new_turn)
 
-    def loadBotsfromTurn (self, new_turn):
+    def loadBotsfromTurn(self, new_turn):
         if self.match_id is not None:
             self.UI.clearActions()
             self.UI.clearBots()
@@ -125,7 +126,6 @@ class Simulator:
 
             self.UI.setTurn(new_turn)
             self.state.turn = new_turn
-
 
     def onEditTurn(self, event):
         new_turn = tkSimpleDialog.askinteger(
@@ -212,7 +212,7 @@ class Simulator:
 
     def onShowActions(self, event):
         if self.state.turn < 100:
-            #the following is needed since if the turn does not change,
+            # the following is needed since if the turn does not change,
             # non-stateless bots behave differently
             if self.player and self.turn_repeat:
                 self.player = Player(self.player1_path)
@@ -231,13 +231,13 @@ class Simulator:
 
             try:
                 rgsim_text = self.player._module.rgsim_text
-                for loc,text in rgsim_text.iteritems():
-                    self.UI.renderText(loc,text)
+                for loc, text in rgsim_text.iteritems():
+                    self.UI.renderText(loc, text)
 
             except AttributeError:
                 print "No rgsim_text dict found for player 1, skipping..."
             except:
-                print ("Error in rgsim_text dict, please ensure keys are "+
+                print ("Error in rgsim_text dict, please ensure keys are " +
                        "valid locations and values are strings")
 
     def onSimulate(self, event):
